@@ -4,7 +4,7 @@
 
 SecureVitals is an ESP32 WROOM-32 wearable-monitoring prototype. The current firmware acquires pulse-oximeter and inertial measurements, derives heart-rate and SpO₂ estimates, screens for possible falls, and reports status locally. Sensor acquisition, signal processing, classification, and presentation all run on the ESP32.
 
-This document describes the implementation in [`SecureVitals_v5_ML_Prototype_f.ino`](../SecureVitals_v5_ML_Prototype_f.ino), not every element in the supplied conceptual flowchart. The current firmware does not include a DS18B20 temperature sensor, persistent event logging, Wi-Fi/BLE transport, a cloud service, caregiver feedback, or a multi-level risk-scoring workflow.
+This document describes the implementation in [`SecureVitals_v5_ML_Prototype_f.ino`](../SecureVitals_v5_ML_Prototype_f.ino), not every element in the supplied conceptual flowchart. The current firmware does not include persistent event logging, Wi-Fi/BLE transport, a cloud service, caregiver feedback, or a multi-level risk-scoring workflow.
 
 ## System diagram
 
@@ -84,7 +84,24 @@ A strong impact (at least 2.8 g) starts an analysis window immediately. Otherwis
 
 Only when both checks pass does the firmware set the confirmed-fall state and immediately override the LCD with a warning. A candidate that does not pass is cleared without a fall confirmation. An optional older rule-based fallback exists in the source but is disabled by default.
 
-The sketch includes `securevitals_fall_model_prototype.h`, which defines the feature count and probability function. That generated header is not present in this repository snapshot, so it must be supplied for a successful firmware build. The model is described in the source as trained on synthetic data anchored to real readings and is not clinically validated.
+The sketch includes `securevitals_fall_model_prototype.h`, which defines the feature count and probability function. That generated header is not present in this repository snapshot, so it must be supplied for a successful firmware build. A source comment describes the model as trained on real-reading-anchored synthetic data. The source does not identify the readings, synthetic-data generation method, labels, dataset size, or training/validation split; the underlying data and model artifact are unavailable here.
+
+### Model evaluation evidence
+
+The repository contains no labeled evaluation dataset, model artifact, prediction outputs, or evaluation report. As a result, performance metrics cannot be independently reproduced or reported from the available files.
+
+| Evaluation item | Evidence available |
+| --- | --- |
+| Training data description | The firmware source comment only says “real-reading-anchored synthetic” data. The source readings, synthesis procedure, label definition, and dataset provenance are not documented. |
+| Number of samples | Not reported in the repository. |
+| Precision | Not reported; evaluation labels and predictions are unavailable. |
+| Recall | Not reported; evaluation labels and predictions are unavailable. |
+| F1 score | Not reported; evaluation labels and predictions are unavailable. |
+| Confusion matrix | Not available; true/false positive and negative counts are not provided. |
+| False-positive rate | Not reported and cannot be calculated without labeled negative examples and prediction counts. |
+| Real-world testing | No real-world testing results are included. The source-described synthetic training data do not establish performance on actual falls, daily activities, users, device placements, or sensor conditions. |
+
+These are evidence gaps, not zero scores. The firmware's probability threshold (0.85) and motion gate are decision settings, not measured evaluation results. Before making performance claims, publish a reproducible evaluation with dataset provenance and sample counts, clear label and split definitions, held-out predictions, precision/recall/F1, and confusion-matrix counts. Any deployment-oriented claim would additionally require representative real-world testing; the model is not clinically validated.
 
 ## Outputs and state
 

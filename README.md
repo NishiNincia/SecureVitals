@@ -55,7 +55,7 @@ flowchart LR
     STATE --> SERIAL
 ```
 
-See [docs/architecture.md](docs/architecture.md) for the processing flow, thresholds, interfaces, limitations, and implementation details. This is an edge-only prototype: the current firmware does not implement cloud services, remote alerts, caregiver feedback, or a temperature sensor.
+See [docs/architecture.md](docs/architecture.md) for the processing flow, thresholds, interfaces, limitations, and implementation details. This is an edge-only prototype: the current firmware does not implement cloud services, remote alerts, or caregiver feedback.
 
 ## Hardware
 
@@ -141,9 +141,18 @@ The code includes safety and reliability measures such as:
 
 ## Notes on the ML model
 
-The implemented fall classifier uses a lightweight logistic-regression style model stored in a generated header file referenced by the firmware. The code comments note that the provided model is intended for prototype evaluation and is not clinically validated.
+The firmware calls a lightweight logistic-regression probability function declared in the generated `securevitals_fall_model_prototype.h` header. The header, training data, and evaluation results are not present in this repository, so the model's training and performance cannot be independently verified. The source comment describes the data as real-reading-anchored synthetic data, but provides no dataset details or sample count.
 
-This means the model should be treated as an experimental proof of concept, and the system should be refined using real labeled fall and non-fall data before deployment in any real-world safety setting.
+| Evaluation item | Evidence available in this repository |
+| --- | --- |
+| Training data | Source comment describes real-reading-anchored synthetic data; dataset, collection method, labels, and splits are unavailable |
+| Number of samples | Not reported |
+| Precision, recall, and F1 | Not reported; no evaluation predictions or labels are included |
+| Confusion matrix | Not available |
+| False-positive rate | Not reported and cannot be calculated without labeled evaluation results |
+| Real-world testing | No real-world validation results are included; the model is experimental and not clinically validated |
+
+Treat fall predictions as experimental only. Performance should be evaluated on a documented, held-out set of labeled fall and non-fall events and then validated with representative real-world testing before any safety-related use. See [docs/architecture.md](docs/architecture.md) for the detailed evaluation evidence and limitations.
 
 ## Safety and limitations
 
