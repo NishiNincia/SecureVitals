@@ -16,6 +16,47 @@ The system monitors:
 
 The firmware is intended as a prototype and research platform for health monitoring and emergency response workflows. It is not a certified medical device and should not be used for clinical diagnosis or treatment decisions.
 
+## Architecture
+
+The diagram below reflects the firmware currently in this repository: sensor acquisition and all signal processing run locally on the ESP32, with results shown on the LCD and Serial Monitor.
+
+```mermaid
+flowchart LR
+    subgraph Sensors["I2C sensors"]
+        PPG["MAX30100<br/>IR + red PPG"]
+        IMU["MPU6050<br/>3-axis accel + gyro"]
+    end
+
+    subgraph ESP32["ESP32 WROOM-32 · Arduino firmware"]
+        ACQ["Timed sensor acquisition<br/>PPG: 40 ms · IMU: 50 ms"]
+        PPGPROC["PPG processing<br/>heart rate + SpO₂ estimate"]
+        MOTION["Motion processing<br/>acceleration magnitude · variance<br/>activity state"]
+        HRFILTER["Motion-aware scalar Kalman filter<br/>filtered HR + confidence"]
+        FALL["Fall screening<br/>IMU feature window → local ML model<br/>motion gate + probability threshold"]
+        STATE["Vitals, activity<br/>and fall-event state"]
+        ACQ --> PPGPROC
+        ACQ --> MOTION
+        MOTION --> HRFILTER
+        PPGPROC --> HRFILTER
+        MOTION --> FALL
+        FALL --> STATE
+        HRFILTER --> STATE
+        PPGPROC --> STATE
+    end
+
+    subgraph Outputs["Local outputs"]
+        LCD["16×2 I2C LCD<br/>rotating status · fall override"]
+        SERIAL["USB Serial<br/>diagnostics · status"]
+    end
+
+    PPG --> ACQ
+    IMU --> ACQ
+    STATE --> LCD
+    STATE --> SERIAL
+```
+
+See [docs/architecture.md](docs/architecture.md) for the processing flow, thresholds, interfaces, limitations, and implementation details. This is an edge-only prototype: the current firmware does not implement cloud services, remote alerts, caregiver feedback, or a temperature sensor.
+
 ## Hardware
 
 The prototype uses:
@@ -39,6 +80,7 @@ Sensors:
 
 - `SecureVitals_v5_ML_Prototype_f.ino` — main ESP32 firmware
 - `README.md` — project overview and setup notes
+- `docs/architecture.md` — detailed firmware architecture and data flow
 
 ## Features
 
